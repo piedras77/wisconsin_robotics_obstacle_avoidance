@@ -20,10 +20,15 @@ class Grid():
 
 	def sample_grid(self):
 		for row in range(self.rowSize - 9):
+			self.grid[row][3] = Point(row, 3, 90, 5)
+			self.grid[row][4] = Point(row, 4, 90, 5)
 			self.grid[row][5] = Point(row, 5, 90, 5)
-			self.grid[row][6] = Point(row, 6, 90, 5)
-			self.grid[row][7] = Point(row, 7, 90, 5)
-			self.grid[row][8] = Point(row, 8, 90, 5)
+
+
+			self.grid[row][9] = Point(row, 9, 90, 5)
+			self.grid[row][10] = Point(row, 10, 90, 5)
+			self.grid[row][11] = Point(row, 11, 90, 5)
+
 
 		
 

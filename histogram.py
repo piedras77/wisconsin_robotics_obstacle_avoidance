@@ -15,7 +15,6 @@ class Histogram():
 		# angle size of each sector
 		self.alpha = 360 / sector_numbers
 		self.populate_sectors(grid)
-		pass
 
 	def populate_sectors(self, grid):
 		min = 1000
@@ -57,7 +56,8 @@ class Histogram():
 		self.sectors[sector_number] /= sector_counter
 
 	def plot_histogram(self):
-		plt.hist(self.sectors)
+		angles = [i for i in range(0, 360, 5)]
+		plt.plot(angles, self. sectors)
 		plt.show()
 
 	def get_magnitude(self, point, grid_size):
@@ -76,9 +76,3 @@ class Histogram():
 			result += 360
 
 		return result
-
-
-
-
-
-
