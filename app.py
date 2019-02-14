@@ -17,6 +17,8 @@ h = histogram.Histogram(72, g, 4)
 
 # determines the min size of a wide valley, rather than min valley
 # TODO: obtain better number for s_max
+# Borensteing suggest s_max = 18 i.e. 90 degrees
+# larger s_max the furthest robot stays from obstacle
 s_max = 18
 
 # TODO: determine threshold, find valley narrow, wide size
@@ -34,9 +36,11 @@ def get_target_distance(valley, target):
 	return 0
 
 # number of consecutive sectors where POD is below threshold
-def get_valley_size():
-	pass
+def is_wide_valley(valley):
+	if 1 + valley[1] - valley[0] > s_max:
+		return True
 
+	return False
 
 # represent a valley as an ordered pair as in (start sector, end sector)
 # iterate through sector array to add valleys to new candidate valleys list
@@ -71,7 +75,14 @@ def select_valley(target_sector):
 
 # target_sector received from global planning
 def select_navigation_angle(target_sector):
+	# first determine target valley
 	target_valley = select_valley(target_sector)
-
-
-select_navigation_angle(22)
+	# from selected valley, determine target sector
+	if get_target_distance(target_valley, target_sector):
+		return target_sector * 5
+	elif is_wide_valley(target_valley):
+		nearest_sector = target_valley[1] if target_sector > target_valley[1] else target_valley[0]
+		border_sector = target_valley[1] - s_max if target_sector > target_valley[1] else target_valley[0] + s_max
+		return ((nearest_sector + border_sector) / 2) * 5
+	else:
+		return ((target_valley[1] + target_valley[0]) / 2) * 5
