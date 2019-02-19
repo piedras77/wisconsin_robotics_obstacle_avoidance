@@ -25,6 +25,10 @@ s_max = 18
 # note that threshold only afects width of valley, but not valley itself
 threshold = 900000000
 
+#TODO: get max speed from robot's specs
+# maximum speed in meters per second
+max_speed = 1.5
+
 # returns distance (in sectors) from sector parameter to target
 # returns 0 if sector parameter contains target
 def get_target_distance(valley, target):
@@ -74,7 +78,7 @@ def select_valley(target_sector):
 
 
 # target_sector received from global planning
-def select_navigation_angle(target_sector):
+def get_navigation_angle(target_sector):
 	# first determine target valley
 	target_valley = select_valley(target_sector)
 	# from selected valley, determine target sector
@@ -86,3 +90,13 @@ def select_navigation_angle(target_sector):
 		return ((nearest_sector + border_sector) / 2) * 5
 	else:
 		return ((target_valley[1] + target_valley[0]) / 2) * 5
+
+def get_max_speed():
+	# high POD ahead implies an obstacle ahead
+	# TODO: empirixally determine density_constant for correct speed reduction
+	density_constant = 999999999
+	density = min(density_constant, h.sectors[len(h.sectors) / 4])
+	# Reduces speed in anticipation of steering maneuver
+	speed = max_speed * (1 - density / density_constant)
+	# Reduces speed according to actual steering angle degree per second
+	# TODO: implement velocity change according to steering rate
