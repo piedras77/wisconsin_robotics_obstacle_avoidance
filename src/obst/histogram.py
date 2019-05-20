@@ -43,52 +43,30 @@ class Histogram():
 				sector_num += 1
 				data_count = 0
 
-		# for i in range(len(self.sectors)):
-			# self.sector_smoothing(i)
+		old_sectors = self.sectors[:]
+		for i in range(len(self.sectors)):
+			self.sector_smoothing(i, old_sectors)
 
-	def sector_smoothing(self, sector_number):
-		print('$$$$$$$$$$')
-		# section 1, section two
-		l = 3
-		smooth_vals = [0] * (2 * l + 1)
-		sector_index = sector_number - l
-		smooth_index = 0
-		constant = 1
-		while sector_index < 0:
-			sector_index += 1
-			smooth_index += 1
-			constant += 1
+		self.old_sectors = old_sectors
 
-		while sector_index < sector_number:
-			smooth_vals[smooth_index] = (constant * self.sectors[sector_index])
-			constant += 1
-			sector_index += 1
-			smooth_index += 1
-
-		smooth_vals[smooth_index] = (constant * self.sectors[sector_index])
-		smooth_index += 1
-		while sector_index < len(self.sectors) and smooth_index < len(smooth_vals):
-			smooth_vals[smooth_index] = (constant * self.sectors[sector_index])
-			constant -= 1
-			sector_index += 1
-			smooth_index += 1
-
-		
-		print('sector num: ' + str(sector_number))
-		print(constant)
-		print(len(smooth_vals))
-		print()
+	def sector_smoothing(self, sector_number, old_sectors):
+		l = 5
+		start = sector_number - l 
+		end = sector_number + l + 1
+		start = 0 if start < 0 else start
+		end = len(old_sectors) - 1 if end >= len(old_sectors) else end
 		num = 0
-		for i in range(len(smooth_vals)):
-			num += smooth_vals[i]
+		for i in range(start, end):
+			constant = abs((sector_number - l) - i) + 1
+			constant_2 = abs((sector_number + l) - i) + 1
+			constant = min(constant, constant_2)
+			num += constant * old_sectors[sector_number]
 
-		self.sectors[sector_number] = num / len(smooth_vals)
-		print('$$$$$$$$$$')
+		# self.sectors[sector_number] = num / (2 * l + 1)
+		self.sectors[sector_number] = num / (end - start)
 
 	def plot_histogram(self):
 		angles = [i for i in range(3, 180, self.alpha)]
-		# print(len(angles))
-		# print(len(self.sectors[0 : 59]))
 		plt.plot(angles, self.sectors[0: 59])
 		plt.show()
 
