@@ -14,6 +14,8 @@ class Histogram():
 		self.data = data
 		self.alpha = 360 / sector_count
 		self.vision_angle = vision_angle
+		self.set_max_range()
+		print('max range: ', self.data.range_max)
 		self.populate_sectors()
 
 	# Angles of histogram go from 0-360 starting at the 
@@ -36,8 +38,8 @@ class Histogram():
 		sector_num = 0
 		data_count = 0
 		for i in range(start, end):
-			# print(self.get_magnitude(self.data.ranges[i]))
-			self.sectors[sector_num] += self.get_magnitude(self.data.ranges[i])
+			magnitude = 0 if self.data.ranges[i] <= 0.0001 else self.get_magnitude(self.data.ranges[i])
+			self.sectors[sector_num] += magnitude
 			data_count += 1
 			if data_count >= readings_per_sector:
 				sector_num += 1
@@ -50,24 +52,42 @@ class Histogram():
 		self.old_sectors = old_sectors
 
 	def sector_smoothing(self, sector_number, old_sectors):
-		l = 5
+		l = 3
 		start = sector_number - l 
 		end = sector_number + l + 1
 		start = 0 if start < 0 else start
-		end = len(old_sectors) - 1 if end >= len(old_sectors) else end
+		end = len(old_sectors) if end > len(old_sectors) else end
 		num = 0
+		empty_sectors = 0
+		# print('$$$$$$$$$$$$$$$')
+		# print(sector_number)
+		# print(start)
+		# print(end)
 		for i in range(start, end):
+			#TODO: TEST THIS CODE
+			# print(old_sectors[sector_number])
+			# if old_sectors[sector_number] <= 0.0001:
+			# 	print('ignore this sector')
+			# 	empty_sectors += 1
+			# 	continue
+
 			constant = abs((sector_number - l) - i) + 1
 			constant_2 = abs((sector_number + l) - i) + 1
 			constant = min(constant, constant_2)
-			num += constant * old_sectors[sector_number]
+			# constant = math.pow(2, constant - 1)
+			# constant *= 2
+			# print('constant: ' + str(constant) + ', with val: ' + str(i))
+			num += constant * old_sectors[i]
 
-		# self.sectors[sector_number] = num / (2 * l + 1)
 		self.sectors[sector_number] = num / (end - start)
+		# print('$$$$$$$$$$$$$$$')
+
+		# self.sectors[sector_number] = num / (end - start - empty_sectors)
 
 	def plot_histogram(self):
 		angles = [i for i in range(3, 180, self.alpha)]
 		plt.plot(angles, self.sectors[0: 59])
+		# plt.plot(angles, self.old_sectors[0:59])
 		plt.show()
 
 	# let the magnitude range from 0 - 1
@@ -77,4 +97,12 @@ class Histogram():
 		a = 1.0
 		b = a / (self.data.range_max) #  * self.data.range_max)
 		return a - b * distance #* distance
+
+	def set_max_range(self):
+		max_range = -1
+		for cur_range in self.data.ranges:
+			max_range = cur_range if cur_range > max_range else max_range
+		
+		self.data.range_max = max_range
+
 	

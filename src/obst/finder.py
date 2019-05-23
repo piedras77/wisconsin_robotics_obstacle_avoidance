@@ -21,7 +21,7 @@ def is_wide_valley(sector_i, sector_f, max_valley):
 # and correct thresholding
 def get_valley(target, sector_count, sector_angle, threshold, vision_angle, data):
 	hist = histogram.Histogram(sector_count, threshold, vision_angle, data) # TODO histogram and parameters
-	# hist.plot_histogram()
+	hist.plot_histogram()
 	valley_start = None
 	best_valley = [None, None]
 	# the furthest a valley could every be from is 360 degrees since this is a circle
