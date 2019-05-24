@@ -1,8 +1,6 @@
 import math
 import matplotlib.pyplot as plt
 
-#TODO: UPDATE IT FOR LIDAR INPUT
-# do magnitude 
 class Histogram():
 	sectors = [0]
 	# Degrees the lidar can make measurements for
@@ -14,23 +12,18 @@ class Histogram():
 		self.data = data
 		self.alpha = 360 / sector_count
 		self.vision_angle = vision_angle
-		self.set_max_range()
-		print('max range: ', self.data.range_max)
+		# correct maximum range of the lidar is about 50 meters
+		self.data.range_max = 52
 		self.populate_sectors()
 
 	# Angles of histogram go from 0-360 starting at the 
 	# right hand side and moving counter clockwise
-	# readings of lidar are from -138 to 138
+	# LIDAR has 275 degrees of horizontal aperture
+	# ranges list starts from rightmost angle to left most
+	# LIDAR gives angular distance between measurements of 0.75 degrees
+	# we want sectors starting from right hand side
 	def populate_sectors(self):
-		# LIDAR has 275 degrees of horizontal aperture
-		# ranges list starts from rightmost angle to left most
-		# lidar gives angular distance between measurements of 0.75 degrees
-		# we want sectors starting from right hand side
-		# each sector is 4, degrees, thus, we have 4 readings per sector
-		# We only use the 180 degrees in front of the robot
-		# i.e. skip the first 47 degrees  and ignore the last 47 degrees
-
-		# number of measurements we need to skip from the start and the end
+		# number of measurements we need to skip from the start and the end, based on our specific vision angle
 		trim_measurements = int(math.ceil(((self.LIDAR_VISION - self.vision_angle)/2.0)/math.degrees(self.data.angle_increment)))
 		start = trim_measurements + 1
 		end = len(self.data.ranges) - trim_measurements
@@ -49,8 +42,6 @@ class Histogram():
 		for i in range(len(self.sectors)):
 			self.sector_smoothing(i, old_sectors)
 
-		self.old_sectors = old_sectors
-
 	def sector_smoothing(self, sector_number, old_sectors):
 		l = 3
 		start = sector_number - l 
@@ -58,51 +49,24 @@ class Histogram():
 		start = 0 if start < 0 else start
 		end = len(old_sectors) if end > len(old_sectors) else end
 		num = 0
-		empty_sectors = 0
-		# print('$$$$$$$$$$$$$$$')
-		# print(sector_number)
-		# print(start)
-		# print(end)
 		for i in range(start, end):
-			#TODO: TEST THIS CODE
-			# print(old_sectors[sector_number])
-			# if old_sectors[sector_number] <= 0.0001:
-			# 	print('ignore this sector')
-			# 	empty_sectors += 1
-			# 	continue
-
 			constant = abs((sector_number - l) - i) + 1
 			constant_2 = abs((sector_number + l) - i) + 1
 			constant = min(constant, constant_2)
-			# constant = math.pow(2, constant - 1)
-			# constant *= 2
-			# print('constant: ' + str(constant) + ', with val: ' + str(i))
 			num += constant * old_sectors[i]
 
 		self.sectors[sector_number] = num / (end - start)
-		# print('$$$$$$$$$$$$$$$')
-
-		# self.sectors[sector_number] = num / (end - start - empty_sectors)
 
 	def plot_histogram(self):
 		angles = [i for i in range(3, 180, self.alpha)]
 		plt.plot(angles, self.sectors[0: 59])
-		# plt.plot(angles, self.old_sectors[0:59])
 		plt.show()
 
 	# let the magnitude range from 0 - 1
 	# the close a measurement is the greatest its magnitude
 	def get_magnitude(self, distance):
 		# We want a = b (self.data.range_max * self.data.range_max)
+		# we could try it with squared distance as well
 		a = 1.0
 		b = a / (self.data.range_max) #  * self.data.range_max)
 		return a - b * distance #* distance
-
-	def set_max_range(self):
-		max_range = -1
-		for cur_range in self.data.ranges:
-			max_range = cur_range if cur_range > max_range else max_range
-		
-		self.data.range_max = max_range
-
-	

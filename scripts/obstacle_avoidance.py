@@ -25,7 +25,7 @@ def data_average(data):
 
 
 def callback(data):
-	if data_average(data) >= 5:
+	if data_average(data) >= 2:
 		result = get_navigation_angle(target_sector, SECTOR_COUNT, SECTOR_ANGLE, HIST_TRESH, VISION_ANGLE, data)
 
 def listener():
